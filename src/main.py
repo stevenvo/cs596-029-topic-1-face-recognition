@@ -2,14 +2,29 @@ import os
 import glob
 import cv2
 import sys
-# import numpy as np
+import ConfigParser #reading facebook consumer key and secret
+
+#using 'facebook' module for oauth with FaceBook
+# create a file called 'auth_settings.txt' in 'src' directory
+# the file use below structure (remove # sign):
+# [facebook]
+# app_id = "<app_id>"
+# app_secret = "<app_secret>"
+import facebook
+
 
 LABEL = 'Tracy'
 ID = 1
+FACEBOOK_PROFILE_ID = ''
 DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING = '../data/input/training/{0:02}-{1}-Raw'.format(ID, LABEL)
 DIRECTORY_OF_CROPPED_FACES = '../data/input/training/{0:02}-{1}-Cropped'.format(ID, LABEL)
 DIRECTORY_OF_EIGEN_FACES = '../data/input/training/{0:02}-{1}-Eigen'.format(ID, LABEL)
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
+CONFIG_FILE = './auth_settings.txt'
+config = ConfigParser.RawConfigParser()
+
+def init():
+    config.read(CONFIG_FILE)
 
 def create_directory():
     if not os.path.exists(DIRECTORY_OF_CROPPED_FACES):
@@ -17,6 +32,10 @@ def create_directory():
     if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
         os.makedirs(DIRECTORY_OF_EIGEN_FACES)
 
+def download_friends_photos():
+    token = facebook.get_app_access_token(config.get('facebook', 'app_id'),
+        config.get('facebook', 'app_secret'))
+    print token
 
 def extract_cropped_faces():
 
@@ -71,7 +90,7 @@ def preprocess_faces():
     for fname in glob.glob("{0}/*.jpg".format(DIRECTORY_OF_CROPPED_FACES)):
         img = cv2.imread(fname, cv2.IMREAD_GRAYSCALE) #read image in GrayScale
         resized_img = resize_image(img)
-        equalized_img = cv2.equalizeHist(resized_img)        
+        equalized_img = cv2.equalizeHist(resized_img)
         cv2.imshow("equalized img", equalized_img)
         cv2.waitKey(0)
 
@@ -79,7 +98,8 @@ def preprocess_faces():
 ###################
 # MAIN PROGRAM#####
 ###################
-
+init()
 create_directory()
+download_friends_photos()
 # extract_cropped_faces()
-preprocess_faces()
+# preprocess_faces()
