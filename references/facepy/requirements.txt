@@ -1,0 +1,9 @@
+requests
+nose
+nose-cov
+sphinx
+mock
+tox
+flake8
+pep8
+six

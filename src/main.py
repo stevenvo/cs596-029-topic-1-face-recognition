@@ -71,8 +71,7 @@ def preprocess_faces():
     for fname in glob.glob("{0}/*.jpg".format(DIRECTORY_OF_CROPPED_FACES)):
         img = cv2.imread(fname, cv2.IMREAD_GRAYSCALE) #read image in GrayScale
         resized_img = resize_image(img)
-        equalized_img = cv2.equalizeHist(resized_img)
-        cv2.imshow("gray img", resized_img)
+        equalized_img = cv2.equalizeHist(resized_img)        
         cv2.imshow("equalized img", equalized_img)
         cv2.waitKey(0)
 
