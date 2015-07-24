@@ -32,6 +32,15 @@ def resize_image(img, new_wide=90.0, interpolation_method=cv2.INTER_AREA):
     else:
         return img
 
+
+## TODO ##
+#Each image is a 250x250 jpg, detected and centered using the openCV
+#implementation of Viola-Jones face detector.  The cropping region
+#returned by the detector was then automatically enlarged by a factor
+#of 2.2 in each dimension to capture more of the head and then scaled
+#to a uniform size.
+
+
 def extract_faces_from_raw_images():
 
     def save_faces(directory, faces):
