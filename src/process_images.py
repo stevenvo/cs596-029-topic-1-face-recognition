@@ -4,19 +4,18 @@ import sys
 
 from glob import glob
 
-
-LABEL = 'Trish'
-ID = 2
+LABEL = 'Steven'
+ID = 3
 DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING = '../data/training/{0:02}-{1}-Raw'.format(ID, LABEL)
 DIRECTORY_OF_CROPPED_FACES = '../data/training/{0:02}-{1}-Cropped'.format(ID, LABEL)
 DIRECTORY_OF_EIGEN_FACES = '../data/training/{0:02}-{1}-Eigen'.format(ID, LABEL)
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
+DEFAULT_FACE_SIZE = 120.0
 
 def init():
     print "DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING={0}".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING)
     print "DIRECTORY_OF_CROPPED_FACES={0}".format(DIRECTORY_OF_CROPPED_FACES)
     print "DIRECTORY_OF_EIGEN_FACES={0}".format(DIRECTORY_OF_EIGEN_FACES)
-
 
 def create_directory():
     if not os.path.exists(DIRECTORY_OF_CROPPED_FACES):
@@ -24,12 +23,19 @@ def create_directory():
     if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
         os.makedirs(DIRECTORY_OF_EIGEN_FACES)
 
-def resize_image(img, new_wide=90.0, interpolation_method=cv2.INTER_AREA):
+def resize_square_image(img, new_wide=120.0, interpolation_method=cv2.INTER_AREA, enlarge=False):
     ratio = float(new_wide) / img.shape[1]
-    if ratio < 1: #only shrink, NOT enlarge
-        new_dimension = (int(new_wide), int(img.shape[0] * ratio))
+    if ratio < 1: #shrink
+        print "resize_square_image:shrink"
+        # new_dimension = (int(img.shape[1] * ratio), int(img.shape[0] * ratio))
+        new_dimension = (int(new_wide), int(new_wide))
         return cv2.resize(img, new_dimension, interpolation= interpolation_method)
-    else:
+    elif enlarge: #enlarge if allowed
+        print "resize_square_image:enlarge"
+        new_dimension = (int(img.shape[1] * ratio), int(img.shape[0] * ratio))
+        return cv2.resize(img, new_dimension, interpolation=cv2.INTER_LINEAR)
+    else: #no enlarge
+        print "resize_square_image:as-is"
         return img
 
 
@@ -54,18 +60,49 @@ def extract_faces_from_raw_images():
         cv2.imshow("Faces found", image)
         return cv2.waitKey(0) # return key pressed
 
-    def get_cropped_image(image, boxes):
+    # - find the ratio from face_box to default_cropped_size=[100.0, 100.0]
+	#    ratio r = default_cropped_size[0] / face_box.height
+    # - crop the image + PADDING
+    # - scale the cropped image by ratio r
+
+    # base on the center, convert rectangle to square
+    def convert_box_to_square(x, y, w, h):
+        if h > w:
+            x = x + w/2 - h/2
+            w = h
+        elif h < w:
+            y = y + h/2 - w/2
+            h = w
+        return x, y, w, h
+
+    # r must be smaller than 2, for example 1.2
+    def add_padding_to_square_box(x, y, w, h, r=1.2):
+        padding = 1
+        while (x-padding > 1) and (y-padding > 1) and (x+padding < w) and (y+padding <h) and padding < w * (r-1):
+            padding += 1
+        return x-padding, y-padding, w+padding, h+padding
+
+
+    def get_cropped_image(image, boxes, padding_ratio=1.2, default_cropped_size=120.0):
         result = []
         for (x, y, w, h) in boxes:
+            # print "ORG x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
+            x, y, w, h = convert_box_to_square(x, y, w, h) # "squaren" the face box
+            # print "SQR x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
+            # x, y, w, h = add_padding_to_square_box(x, y, w, h, padding_ratio) #add padding to the face box
+            # print "PAD x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
             cropped_img = image[y:y+h, x:x+w]
-            result.append(cropped_img)
+            # print cropped_img.shape
+            resized_img = resize_square_image(cropped_img, new_wide=default_cropped_size,
+                interpolation_method=cv2.INTER_AREA, enlarge=True)
+            # print resized_img.shape
+            result.append(resized_img)
         return result
 
     def preprocess_faces(faces):
         result = []
         for face in faces:
-            face = resize_image(face, 120)
-            face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+            # face = resize_square_image(face, 120)
             face = cv2.equalizeHist(face)
             result.append(face)
         return result
@@ -78,10 +115,9 @@ def extract_faces_from_raw_images():
     files.extend(glob("{0}/*.bmp".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING)))
     faces = []
     for fname in files:
-        image = resize_image(cv2.imread(fname), 320)
-        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
         face_boxes = faceCascade.detectMultiScale(
-            gray_img,
+            image,
             scaleFactor=1.05,
             minNeighbors=5,
             minSize=(15, 15),
@@ -90,7 +126,8 @@ def extract_faces_from_raw_images():
         print "Found {0} faces in {1}!".format(len(face_boxes), fname)
         key_pressed = draw_rectangle_on_detected_faces(image.copy(), face_boxes)
         if key_pressed == ord('s'):
-            cropped_faces = get_cropped_image(image, face_boxes)
+            cropped_faces = get_cropped_image(image, face_boxes,
+                padding_ratio=1.2, default_cropped_size=DEFAULT_FACE_SIZE)
             cropped_faces = preprocess_faces(cropped_faces)
             faces.extend(cropped_faces)
         elif key_pressed == ord('d'):

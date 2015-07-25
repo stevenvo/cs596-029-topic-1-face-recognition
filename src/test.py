@@ -55,9 +55,6 @@ print("n_features: %d" % n_features)
 print("n_classes: %d" % n_classes)
 
 
-for i, face in enumerate(lfw_people.data):
-    if i < 5:
-        # plot_image(face, cmap=plt.cm.gray)
-        cv2.imshow("Face", face.reshape((h,w)))
-        # plt.imshow(images[i].reshape((h, w)), cmap=plt.cm.gray)
-        # cv2.waitKey(0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+print(X_train.shape)
+print(X_train)
