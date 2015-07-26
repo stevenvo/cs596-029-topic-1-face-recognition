@@ -1,19 +1,23 @@
+from pudb import set_trace
+
 import os
 import cv2
 import sys
 
 from glob import glob
 
-LABEL = 'Steven'
-ID = 3
-DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING = '../data/training/{0:02}-{1}-Raw'.format(ID, LABEL)
-DIRECTORY_OF_CROPPED_FACES = '../data/training/{0:02}-{1}-Cropped'.format(ID, LABEL)
-DIRECTORY_OF_EIGEN_FACES = '../data/training/{0:02}-{1}-Eigen'.format(ID, LABEL)
+TYPE = 'testing'
+LABEL = 'friends'
+ID = 0
+DIRECTORY_OF_RAW_IMAGES = '../data/{0}/{1:02}-{2}-Raw'.format(TYPE, ID, LABEL)
+DIRECTORY_OF_CROPPED_FACES = '../data/{0}/{1:02}-{2}-Cropped'.format(TYPE, ID, LABEL)
+DIRECTORY_OF_EIGEN_FACES = '../data/{0}/{1:02}-{2}-Eigen'.format(TYPE, ID, LABEL)
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
 DEFAULT_FACE_SIZE = 120.0
+count = 0
 
 def init():
-    print "DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING={0}".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING)
+    print "DIRECTORY_OF_RAW_IMAGES={0}".format(DIRECTORY_OF_RAW_IMAGES)
     print "DIRECTORY_OF_CROPPED_FACES={0}".format(DIRECTORY_OF_CROPPED_FACES)
     print "DIRECTORY_OF_EIGEN_FACES={0}".format(DIRECTORY_OF_EIGEN_FACES)
 
@@ -23,16 +27,15 @@ def create_directory():
     if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
         os.makedirs(DIRECTORY_OF_EIGEN_FACES)
 
-def resize_square_image(img, new_wide=120.0, interpolation_method=cv2.INTER_AREA, enlarge=False):
+def resize_square_image(img, new_wide=120.0, can_enlarge=False):
     ratio = float(new_wide) / img.shape[1]
     if ratio < 1: #shrink
         print "resize_square_image:shrink"
-        # new_dimension = (int(img.shape[1] * ratio), int(img.shape[0] * ratio))
         new_dimension = (int(new_wide), int(new_wide))
-        return cv2.resize(img, new_dimension, interpolation= interpolation_method)
-    elif enlarge: #enlarge if allowed
+        return cv2.resize(img, new_dimension, interpolation=cv2.INTER_AREA)
+    elif can_enlarge: #enlarge if allowed
         print "resize_square_image:enlarge"
-        new_dimension = (int(img.shape[1] * ratio), int(img.shape[0] * ratio))
+        new_dimension = (int(new_wide), int(new_wide))
         return cv2.resize(img, new_dimension, interpolation=cv2.INTER_LINEAR)
     else: #no enlarge
         print "resize_square_image:as-is"
@@ -86,6 +89,9 @@ def extract_faces_from_raw_images():
     def get_cropped_image(image, boxes, padding_ratio=1.2, default_cropped_size=120.0):
         result = []
         for (x, y, w, h) in boxes:
+            # global count
+            # if count == 17:
+                # set_trace()
             # print "ORG x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
             x, y, w, h = convert_box_to_square(x, y, w, h) # "squaren" the face box
             # print "SQR x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
@@ -94,9 +100,10 @@ def extract_faces_from_raw_images():
             cropped_img = image[y:y+h, x:x+w]
             # print cropped_img.shape
             resized_img = resize_square_image(cropped_img, new_wide=default_cropped_size,
-                interpolation_method=cv2.INTER_AREA, enlarge=True)
+                can_enlarge=True)
             # print resized_img.shape
             result.append(resized_img)
+            # count += 1
         return result
 
     def preprocess_faces(faces):
@@ -110,9 +117,9 @@ def extract_faces_from_raw_images():
 
     # Create the haar cascade
     faceCascade = cv2.CascadeClassifier(CASCADE_FILE)
-    files = glob("{0}/*.jpg".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING))
-    files.extend(glob("{0}/*.png".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING)))
-    files.extend(glob("{0}/*.bmp".format(DIRECTORY_OF_RAW_IMAGES_FOR_TRAINING)))
+    files = glob("{0}/*.jpg".format(DIRECTORY_OF_RAW_IMAGES))
+    files.extend(glob("{0}/*.png".format(DIRECTORY_OF_RAW_IMAGES)))
+    files.extend(glob("{0}/*.bmp".format(DIRECTORY_OF_RAW_IMAGES)))
     faces = []
     for fname in files:
         image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)

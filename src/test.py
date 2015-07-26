@@ -49,12 +49,13 @@ y = lfw_people.target
 target_names = lfw_people.target_names
 n_classes = target_names.shape[0]
 
-print("Total dataset size:")
-print("n_samples: %d" % n_samples)
-print("n_features: %d" % n_features)
-print("n_classes: %d" % n_classes)
+# print("Total dataset size:")
+# print("n_samples: %d" % n_samples)
+# print("n_features: %d" % n_features)
+# print("n_classes: %d" % n_classes)
 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
-print(X_train.shape)
-print(X_train)
+# print(X_train.shape)
+# print(X_train)
+print(lfw_people.target_names)
