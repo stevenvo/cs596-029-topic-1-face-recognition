@@ -15,7 +15,7 @@ ID = 1
 DIRECTORY_OF_RAW_IMAGES = '../data/{0}/{1:02}-{2}-Raw'.format(TYPE, ID, LABEL)
 PROGRESS_FILE = '../data/{0}/{1:02}-{2}-Raw/progress.npy'.format(TYPE, ID, LABEL)
 DIRECTORY_OF_CROPPED_FACES = '../data/{0}/{1:02}-{2}-Cropped'.format(TYPE, ID, LABEL)
-DIRECTORY_OF_EIGEN_FACES = '../data/{0}/{1:02}-{2}-Eigen'.format(TYPE, ID, LABEL)
+# DIRECTORY_OF_EIGEN_FACES = '../data/{0}/{1:02}-{2}-Eigen'.format(TYPE, ID, LABEL)
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
 DEFAULT_FACE_SIZE = 120.0
 count = 0
@@ -23,13 +23,13 @@ count = 0
 def init():
     print "DIRECTORY_OF_RAW_IMAGES={0}".format(DIRECTORY_OF_RAW_IMAGES)
     print "DIRECTORY_OF_CROPPED_FACES={0}".format(DIRECTORY_OF_CROPPED_FACES)
-    print "DIRECTORY_OF_EIGEN_FACES={0}".format(DIRECTORY_OF_EIGEN_FACES)
+    # print "DIRECTORY_OF_EIGEN_FACES={0}".format(DIRECTORY_OF_EIGEN_FACES)
 
 def create_directory():
     if not os.path.exists(DIRECTORY_OF_CROPPED_FACES):
         os.makedirs(DIRECTORY_OF_CROPPED_FACES)
-    if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
-        os.makedirs(DIRECTORY_OF_EIGEN_FACES)
+    # if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
+    #     os.makedirs(DIRECTORY_OF_EIGEN_FACES)
 
 def resize_image_if_bigger(img, max_edge = 1024):
     (h,w) = img.shape[:2]
