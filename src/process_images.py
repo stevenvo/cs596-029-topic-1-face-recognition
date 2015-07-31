@@ -169,7 +169,7 @@ def extract_faces_from_raw_images():
         progress_file_data = np.load(PROGRESS_FILE).tolist()
     else:
         progress_file_data = []
-    print progress_file_data
+    # print progress_file_data
     for fname in files:
         if already_processed(progress_file_data, fname) == -1: #is NOT processed yet
             image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
@@ -205,10 +205,6 @@ def extract_faces_from_raw_images():
                 break
 
     np.save(PROGRESS_FILE, progress_file_data)
-    # print progress_file_data
-    # f = open(PROGRESS_FILE, 'wb')
-    # pickle.dump(f, progress_file_data)
-    # f.close()
 
     # save_faces(DIRECTORY_OF_CROPPED_FACES, faces)
 
