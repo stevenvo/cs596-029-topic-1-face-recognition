@@ -1,5 +1,4 @@
 *.DS_Store
 *.pyc
-*.jpg
 ~$*.*
-auth_settings.txt
+data/*/*-Raw

@@ -37,6 +37,7 @@ def recognize_face():
         for path in glob(dir_path):
             id, name = extract_id_name(path)
             files = glob("{0}/*.jpg".format(path))
+            print "LOAD IMAGES - Mode, id, name, total images: {0}, {1}, {2}, {3}".format(mode, id, name, len(files))
             for f in files:
                 img = cv2.imread(f, cv2.IMREAD_GRAYSCALE)
                 img = img.flatten()
@@ -69,11 +70,11 @@ def recognize_face():
     def print_comparison_result(y_test, y_predict):
         print "======CLASSIFICATION REPORT======="
         print(classification_report(y_test, y_predict, target_names=TARGET_NAMES))
-        print "======TEST RESULT COMPARISON======="
-        for i, y in enumerate(y_test):
-            print "{0}.\tPrediction = {1}\tActual/Predict: {2}/{3}".format(i,
-                "CORRECT" if y == y_predict[i] else "INCORRECT",
-                TARGET_NAMES[y-1], TARGET_NAMES[y_predict[i]-1])
+        # print "======TEST RESULT COMPARISON======="
+        # for i, y in enumerate(y_test):
+        #     print "{0}.\tPrediction = {1}\tActual/Predict: {2}/{3}".format(i,
+        #         "CORRECT" if y == y_predict[i] else "INCORRECT",
+        #         TARGET_NAMES[y-1], TARGET_NAMES[y_predict[i]-1])
 
     X_train, y_train = read_cropped_faces(mode=TRAINING)
     X_test, y_test = read_cropped_faces(mode=TESTING)

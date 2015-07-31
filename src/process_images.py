@@ -3,13 +3,17 @@ from pudb import set_trace
 import os
 import cv2
 import sys
+import uuid
+import pickle
+import numpy as np
 
 from glob import glob
 
-TYPE = 'testing'
-LABEL = 'friends'
-ID = 0
+TYPE = 'training'
+LABEL = 'Tracy'
+ID = 1
 DIRECTORY_OF_RAW_IMAGES = '../data/{0}/{1:02}-{2}-Raw'.format(TYPE, ID, LABEL)
+PROGRESS_FILE = '../data/{0}/{1:02}-{2}-Raw/progress.npy'.format(TYPE, ID, LABEL)
 DIRECTORY_OF_CROPPED_FACES = '../data/{0}/{1:02}-{2}-Cropped'.format(TYPE, ID, LABEL)
 DIRECTORY_OF_EIGEN_FACES = '../data/{0}/{1:02}-{2}-Eigen'.format(TYPE, ID, LABEL)
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
@@ -27,6 +31,16 @@ def create_directory():
     if not os.path.exists(DIRECTORY_OF_EIGEN_FACES):
         os.makedirs(DIRECTORY_OF_EIGEN_FACES)
 
+def resize_image_if_bigger(img, max_edge = 1024):
+    (h,w) = img.shape[:2]
+    if h > max_edge or img.shape[0] > max_edge:
+        # print "resize_image_if_bigger is called!"
+        l = max(h, w)
+        ratio = float(max_edge) / l
+        new_dimension = (int(w*ratio), int(h*ratio))
+        return cv2.resize(img, new_dimension, interpolation=cv2.INTER_LINEAR)
+    return img
+
 def resize_square_image(img, new_wide=120.0, can_enlarge=False):
     ratio = float(new_wide) / img.shape[1]
     if ratio < 1: #shrink
@@ -42,25 +56,46 @@ def resize_square_image(img, new_wide=120.0, can_enlarge=False):
         return img
 
 
-## TODO ##
-#Each image is a 250x250 jpg, detected and centered using the openCV
-#implementation of Viola-Jones face detector.  The cropping region
-#returned by the detector was then automatically enlarged by a factor
-#of 2.2 in each dimension to capture more of the head and then scaled
-#to a uniform size.
-
-
 def extract_faces_from_raw_images():
+
+    def save_face(directory, face):
+        f_path = "{0}/{1}-{2}-face-{3}.jpg".format(directory, ID, LABEL, uuid.uuid4())
+        cv2.imwrite(f_path, face)
+        return f_path
 
     def save_faces(directory, faces):
         for i, face in enumerate(faces):
-            cv2.imwrite("{0}/{1}-{2}-face-{3:02}.jpg".format(directory, ID, LABEL, i), face)
+            # cv2.imwrite("{0}/{1}-{2}-face-{3:02}.jpg".format(directory, ID, LABEL, i), face)
+            cv2.imwrite("{0}/{1}-{2}-face-{3}.jpg".format(directory, ID, LABEL, uuid.uuid4()), face)
+
+
+    def click_and_crop(event, x, y, flags, param):
+        # grab references to the global variables
+        global clicked_pnt
+
+        # if the left mouse button was clicked, record the starting
+        # (x, y) coordinates and indicate that cropping is being
+        # performed
+        if event == cv2.EVENT_LBUTTONDOWN:
+            clicked_pnt = [x, y]
+            # print refPt
+            # cropping = True
+
+        # check to see if the left mouse button was released
+        # elif event == cv2.EVENT_LBUTTONUP:
+        #     # record the ending (x, y) coordinates and indicate that
+        #     # the cropping operation is finished
+        #     refPt.append((x, y))
+        #     print refPt
+        #     cropping = False
+
 
     def draw_rectangle_on_detected_faces(image, faces):
         # Draw a rectangle around the faces
         for (x, y, w, h) in faces:
             cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 1)
-        cv2.imshow("Faces found", image)
+        cv2.imshow("FacesFound", image)
+        cv2.setMouseCallback("FacesFound", click_and_crop)
         return cv2.waitKey(0) # return key pressed
 
     # - find the ratio from face_box to default_cropped_size=[100.0, 100.0]
@@ -86,23 +121,26 @@ def extract_faces_from_raw_images():
         return x-padding, y-padding, w+padding, h+padding
 
 
-    def get_cropped_image(image, boxes, padding_ratio=1.2, default_cropped_size=120.0):
+    def get_cropped_image(image, boxes, padding_ratio=1.2, default_cropped_size=120.0, ref_pnt = None):
         result = []
         for (x, y, w, h) in boxes:
-            # global count
-            # if count == 17:
-                # set_trace()
-            # print "ORG x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
             x, y, w, h = convert_box_to_square(x, y, w, h) # "squaren" the face box
-            # print "SQR x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
-            # x, y, w, h = add_padding_to_square_box(x, y, w, h, padding_ratio) #add padding to the face box
-            # print "PAD x, y, w, h = {0}, {1}, {2}, {3}".format(x, y, w, h)
             cropped_img = image[y:y+h, x:x+w]
-            # print cropped_img.shape
-            resized_img = resize_square_image(cropped_img, new_wide=default_cropped_size,
-                can_enlarge=True)
-            # print resized_img.shape
-            result.append(resized_img)
+            # print "x,y,w,h: {0}, {1}, {2}, {3}".format(x,y,w,h)
+            # print "ref_pnt: {0}".format(ref_pnt)
+
+            if ref_pnt != None and len(ref_pnt) == 2:
+                if (x <= ref_pnt[0] <= x + w) and (y<= ref_pnt[1] <= y + h):
+                    # print "OK - x,y,w,h: {0}, {1}, {2}, {3}".format(x,y,w,h)
+                    resized_img = resize_square_image(cropped_img, new_wide=default_cropped_size,
+                        can_enlarge=True)
+                    result.append(resized_img)
+                    return result
+            else:
+                resized_img = resize_square_image(cropped_img, new_wide=default_cropped_size,
+                    can_enlarge=True)
+                # result.append(resized_img)
+
             # count += 1
         return result
 
@@ -114,6 +152,11 @@ def extract_faces_from_raw_images():
             result.append(face)
         return result
 
+    def already_processed(progress_file_data, fname):
+        for i, files in enumerate(progress_file_data):
+            if files[0] == fname:
+                return i
+        return -1
 
     # Create the haar cascade
     faceCascade = cv2.CascadeClassifier(CASCADE_FILE)
@@ -121,26 +164,53 @@ def extract_faces_from_raw_images():
     files.extend(glob("{0}/*.png".format(DIRECTORY_OF_RAW_IMAGES)))
     files.extend(glob("{0}/*.bmp".format(DIRECTORY_OF_RAW_IMAGES)))
     faces = []
-    for fname in files:
-        image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
-        face_boxes = faceCascade.detectMultiScale(
-            image,
-            scaleFactor=1.05,
-            minNeighbors=5,
-            minSize=(15, 15),
-            flags = cv2.cv.CV_HAAR_SCALE_IMAGE
-        )
-        print "Found {0} faces in {1}!".format(len(face_boxes), fname)
-        key_pressed = draw_rectangle_on_detected_faces(image.copy(), face_boxes)
-        if key_pressed == ord('s'):
-            cropped_faces = get_cropped_image(image, face_boxes,
-                padding_ratio=1.2, default_cropped_size=DEFAULT_FACE_SIZE)
-            cropped_faces = preprocess_faces(cropped_faces)
-            faces.extend(cropped_faces)
-        elif key_pressed == ord('d'):
-            os.remove(fname)
 
-    save_faces(DIRECTORY_OF_CROPPED_FACES, faces)
+    if os.path.isfile(PROGRESS_FILE):
+        progress_file_data = np.load(PROGRESS_FILE).tolist()
+    else:
+        progress_file_data = []
+    print progress_file_data
+    for fname in files:
+        if already_processed(progress_file_data, fname) == -1: #is NOT processed yet
+            image = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
+            image = resize_image_if_bigger(image, max_edge=1024)
+            face_boxes = faceCascade.detectMultiScale(
+                image,
+                scaleFactor=1.05,
+                minNeighbors=5,
+                minSize=(15, 15),
+                flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+            )
+            print "Found {0} faces in {1}!".format(len(face_boxes), fname)
+            global clicked_pnt
+
+            # color image just for show
+            color_image = cv2.imread(fname)
+            color_image = resize_image_if_bigger(color_image, max_edge=1024)
+            key_pressed = draw_rectangle_on_detected_faces(color_image, face_boxes)
+
+            if key_pressed == ord('s'):
+                cropped_faces = get_cropped_image(image, face_boxes,
+                    padding_ratio=1.2, default_cropped_size=DEFAULT_FACE_SIZE, ref_pnt = clicked_pnt)
+                cropped_faces = preprocess_faces(cropped_faces)
+                cropped_face = cropped_faces[0]
+                flipped_face = cv2.flip(cropped_face, 1)
+                cropped_file_path = save_face(DIRECTORY_OF_CROPPED_FACES, cropped_face)
+                save_face(DIRECTORY_OF_CROPPED_FACES, flipped_face)
+                progress_file_data.append([fname, cropped_file_path])
+                # faces.extend(cropped_faces)
+            elif key_pressed == ord('d'):
+                os.remove(fname)
+            elif key_pressed == ord('q'):
+                break
+
+    np.save(PROGRESS_FILE, progress_file_data)
+    # print progress_file_data
+    # f = open(PROGRESS_FILE, 'wb')
+    # pickle.dump(f, progress_file_data)
+    # f.close()
+
+    # save_faces(DIRECTORY_OF_CROPPED_FACES, faces)
 
 
 ###################
