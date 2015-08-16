@@ -27,8 +27,9 @@ This project (Topic 1 - Face Recognition) is implemented with guidance by Profes
 
 ```
 
-## Guide
-Please make sure **you are in `src` folder** before executing any python command. 
+## Usage
+* Please make sure **you are in `src` folder** before executing any python command. 
+* I'm using these libraries (cv2, re, numpy, pandas, pickle, sklearn, uuid), please ensure you have them before execution
 
 The program has 2 python scripts:
 
