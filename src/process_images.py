@@ -13,7 +13,7 @@ from glob import glob
 #### CONFIGURATIONS ####
 ########################
 
-# indicates which dataset the processed images should fall into, either 'training' or 'test'
+# indicates which dataset the processed images should fall into, change to 'test' if you want to populate more photos for testing purposes.
 TYPE = 'training'
 
 # Currently the program support static number of classes (persons). These are the pre-defined classes.
@@ -35,7 +35,7 @@ DIRECTORY_OF_CROPPED_FACES = '../data/{0}/{1:02}-{2}-Cropped'.format(TYPE, ID, L
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
 
 # dimension of the cropped faces
-# IMPORTANT: should this value be changed, make sure you delete and regenerate all training and testing cropped images, otherwise the PCA will complain that the dimension of the data is not consistent. Also make sure the same dimension is used in the recognize_face.py
+# IMPORTANT: should this value be changed, make sure you delete and regenerate all training and testing cropped images, otherwise the PCA will complain that the dimension of the data is not consistent. Also make sure the same dimension is used in the recognize_face.py.
 DEFAULT_FACE_SIZE = 120.0
 
 
