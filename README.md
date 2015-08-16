@@ -29,10 +29,11 @@ Please make sure **you are in `src` folder** before executing any python command
 
 The program has 2 python scripts:
 
-* `process_images.py`: 
-    * **Description**: This script read images from **Raw** folders (refer to Directory Structure), then extract the cropped faces into **Cropped** folder.    
-    * **Parameters**: all parameters are included inside the python file. 
-    * **Usage**: `python process_images.py`. 
-* `recognize_faces.py`    
+* `process_images.py`: reads images from **Raw** folders (refer to Directory Structure), then extract the cropped faces into **Cropped** folder.    
+    * **Configurations**: all parameters are configured and included inside the python file. You can change ID, Label to process more training data for different class (person). Make sure they are consistent. 
+    * **Usage**: `python process_images.py`, when the image popup, please click on the face you want to extract and press 's' to save it. If you want to quit, press 'q'. Your image processing progress will be kept in the *.npy files in RAW image folder. 
+* `recognize_faces.py`: learns from the training data, generate models, snapshot the model, predict results. 
+    * **Configurations**: all parameters are configured and included inside the python file. You can play around with `REUSE_TRAINED_MODEL_FILE`, change it to empty string if you want to recompute the model. 
+    * **Usage**: `python recognize_faces.py`
 
 Process images
