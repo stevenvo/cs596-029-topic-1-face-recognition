@@ -1,5 +1,8 @@
 # CS596-029 Project Topic 1 - Face Recognition
 
+## Brief Intro
+This project (Topic 1 - Face Recognition) is implemented with guidance by Professor Eugene Chang in module CS596-029, Machine Learning and Data Mining, svuca.edu.
+
 
 ## Project Directory Structure
 ```
