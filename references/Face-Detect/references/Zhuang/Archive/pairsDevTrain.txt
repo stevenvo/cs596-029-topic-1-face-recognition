@@ -1,0 +1,8 @@
+1100
+Angelababy	8	19
+Angelababy	1	14
+Binging_Fan	1	20
+Binging_Fan	2	6
+Binging_Fan	3	6
+Angelababy	1	Bingbing_Fan	2
+Angelababy	2	Bingbing_Fan	2

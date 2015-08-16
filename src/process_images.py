@@ -1,4 +1,4 @@
-from pudb import set_trace
+# from pudb import set_trace
 
 import os
 import cv2
@@ -9,16 +9,39 @@ import numpy as np
 
 from glob import glob
 
+########################
+#### CONFIGURATIONS ####
+########################
+
+# indicates which dataset the processed images should fall into, either 'training' or 'test'
 TYPE = 'training'
-LABEL = 'Tracy'
-ID = 1
+
+# Currently the program support static number of classes (persons). These are the pre-defined classes.
+# {ID:1, LABEL:Tracy}
+# {ID:2, LABEL:Trish}
+# {ID:3, LABEL:Steven}
+# IMPORTANT: when modifying the configuration below, make sure the ID tallies with the LABEL.
+
+# indicates which class (person) name & ID the processed images should be tagged with.
+ID, LABEL = 2, 'Trish'
+
+# indicates where the RAW files are placed, the program will grab the raw files from these directories.
 DIRECTORY_OF_RAW_IMAGES = '../data/{0}/{1:02}-{2}-Raw'.format(TYPE, ID, LABEL)
+# due to a massive amount of RAW files and to avoid duplicate processing, the progress.npy is used to mark which RAW files have been processed before. This file is stored in each RAW files directory, in numpy format. 
 PROGRESS_FILE = '../data/{0}/{1:02}-{2}-Raw/progress.npy'.format(TYPE, ID, LABEL)
+# indicates the directory storing the cropped images of the face after processing
 DIRECTORY_OF_CROPPED_FACES = '../data/{0}/{1:02}-{2}-Cropped'.format(TYPE, ID, LABEL)
-# DIRECTORY_OF_EIGEN_FACES = '../data/{0}/{1:02}-{2}-Eigen'.format(TYPE, ID, LABEL)
+# cascade file path
 CASCADE_FILE = './haarcascade_frontalface_default.xml'
+
+# dimension of the cropped faces
+# IMPORTANT: should this value be changed, make sure you delete and regenerate all training and testing cropped images, otherwise the PCA will complain that the dimension of the data is not consistent. Also make sure the same dimension is used in the recognize_face.py
 DEFAULT_FACE_SIZE = 120.0
-count = 0
+
+
+###################
+#### FUNCTIONS ####
+###################
 
 def init():
     print "DIRECTORY_OF_RAW_IMAGES={0}".format(DIRECTORY_OF_RAW_IMAGES)
@@ -141,7 +164,6 @@ def extract_faces_from_raw_images():
                     can_enlarge=True)
                 # result.append(resized_img)
 
-            # count += 1
         return result
 
     def preprocess_faces(faces):
