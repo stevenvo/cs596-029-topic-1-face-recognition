@@ -40,4 +40,38 @@ The program has 2 python scripts:
 
 * **Completed features**
     1. [x] Using OpenCV to detect face    1. [x] Crop face and pre-process faces    1. [x] Preparing database for training & testing
-    1. [x] Generate more training data by [Facebook Data Scraping](https://github.com/stevenvo/facebook_data_scraping)    1. [x] Face Flipping: to produce 2 images of the same person (for better recognition of both sides)    1. [x] Ability to click on the square box in OpenCV to choose which face can be extracted (since OpenCV is not always correct)    1. [x] Ability to load and store the progress of face extraction & review so we can resume later with newer images    1. [x] Implement GridSearchCV, kernel RBF to find best settings in multiple C and Gamma values.    1. [x] Add auto-scaling when displaying & processing large images.    1. [x] Printing Confusion Matrix in result (using SKLearn)Printing Classification Report in result (using SKLearn)    1. [x] Store and Load trained model using Pickle * **TODO List**    1. [ ] Applying adaboost, either with SVM or other classifier and compare the result. [experiment]    1. [ ] Build some UI function to show "Name" directly on the face in TEST photo. [fancy feature]    1. [ ] Find a way to deal with face angle (when it’s not straight) to improve result further.
+    1. [x] Generate more training data by [Facebook Data Scraping](https://github.com/stevenvo/facebook_data_scraping)    1. [x] Face Flipping: to produce 2 images of the same person (for better recognition of both sides)    1. [x] Ability to click on the square box in OpenCV to choose which face can be extracted (since OpenCV is not always correct)    1. [x] Ability to load and store the progress of face extraction & review so we can resume later with newer images    1. [x] Implement GridSearchCV, kernel RBF to find best settings in multiple C and Gamma values.    1. [x] Add auto-scaling when displaying & processing large images.    1. [x] Printing Confusion Matrix in result (using SKLearn)Printing Classification Report in result (using SKLearn)    1. [x] Store and Load trained model using Pickle * **TODO List**    1. [ ] Applying adaboost, either with SVM or other classifier and compare the result. [experiment]    1. [ ] Build some UI function to show "Name" directly on the face in TEST photo. [fancy feature]    1. [ ] Find a way to deal with face angle (when it’s not straight) to improve result further.## Sample Output
+This is the sample output from the recognize_faces.py.
+
+```
+======TRAINING DATA=======
+- Mode, id, name, total images: training, 01, Tracy, 162
+- Mode, id, name, total images: training, 02, Trish, 78
+- Mode, id, name, total images: training, 03, Steven, 64
+
+======TESTING DATA=======
+- Mode, id, name, total images: testing, 00, friends, 0
+- Mode, id, name, total images: testing, 01, Tracy, 28
+- Mode, id, name, total images: testing, 02, Trish, 30
+- Mode, id, name, total images: testing, 03, Steven, 13
+
+==================RESULT==================
+Confusion Matrix: 
+        Tracy  Trish  Steven
+Tracy      27      1       0
+Trish       8     22       0
+Steven      1      0      12
+Classification Report: 
+             precision    recall  f1-score   support
+
+      Tracy       0.75      0.96      0.84        28
+      Trish       0.96      0.73      0.83        30
+     Steven       1.00      0.92      0.96        13
+
+avg / total       0.88      0.86      0.86        71
+
+
+        How to comprehend the report:
+        - Recall value: "Given a true face of person X, how likely does the classifier detect it is X?
+        - Precision value: "If the classifier predicted a face person X, how likely is it to be correct?
+```
