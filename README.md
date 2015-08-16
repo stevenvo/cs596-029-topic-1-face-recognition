@@ -28,9 +28,19 @@ This project (Topic 1 - Face Recognition) is implemented with guidance by Profes
 ```
 
 ## Usage
-* Please make sure **you are in `src` folder** before executing any python command. 
-* I'm using these libraries (cv2, re, numpy, pandas, pickle, sklearn, uuid), please ensure you have them before execution
 
+### Dependencies
+* Please make sure **you are in `src` folder** before executing any python command. 
+* I'm using these libraries (cv2, re, numpy, pandas, pickle, sklearn, uuid), please ensure you have them before execution.
+    * **OpenCV**: this is the instructions using [homebrew](http://brew.sh/) on OSX to install OpenCV.
+        
+        ```
+        brew tap homebrew/science
+        brew install opencv
+        ```  
+    * **Other python packages**: `pip install -r requirements.txt`, the requirements file is just recommendation, you can install the packages on your own if you like. 
+
+### Execution
 The program has 2 python scripts:
 
 * `process_images.py`: This script does all image processing tasks such as face extraction (Black and White), squaring, flipping and equalization. It reads images from **Raw** folders (refer to Directory Structure), then extract the cropped face outputs into **Cropped** folder.
